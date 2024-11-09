@@ -60,4 +60,10 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation ("androidx.compose.ui:ui:1.5.0")  // Or the latest version
+    implementation ("androidx.compose.material3:material3:1.0.0")  // For Material 3
+    implementation ("androidx.compose.material:material-icons-extended:1.5.0") // For icons like Visibility and VisibilityOff
+    
+
 }

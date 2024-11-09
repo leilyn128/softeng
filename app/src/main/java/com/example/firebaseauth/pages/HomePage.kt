@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.firebaseauth.AuthState
 import com.example.firebaseauth.AuthViewModel
 import com.example.firebaseauth.ui.theme.NavItem
@@ -97,22 +98,21 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController,authVie
 fun ContentScreen(
     modifier: Modifier = Modifier,
     selectedIndex: Int,
-    //isLoggedOut: Boolean,
-    //onLogout: () -> Unit,
     onNavigateToCamera: (onBack: (String) -> Unit) -> Unit,
     onBack: (String) -> Unit,
     authViewModel: AuthViewModel = viewModel() // Obtain ViewModel instance by default
 ) {
-   // if (isLoggedOut) {
-        //LoginPage(modifier = modifier, authViewModel = authViewModel)
-    //} else {
-        when (selectedIndex) {
-            0 -> MapPage(modifier = modifier) // Ensure MapPage accepts this modifier
-            1 -> DTR(onNavigateToCamera = onNavigateToCamera) // Pass the callback
-            2 -> Account(modifier = modifier, authViewModel = authViewModel)
-            3 -> CameraPage(onBack = onBack) // Pass back navigation
-        }
+    // Create NavController using rememberNavController
+    val navController = rememberNavController()
+
+    // Navigation logic based on the selected index
+    when (selectedIndex) {
+        0 -> MapPage(modifier = modifier) // Ensure MapPage accepts this modifier
+        1 -> DTR(onNavigateToCamera = onNavigateToCamera) // Pass the callback
+        2 -> Account(modifier = modifier, authViewModel = authViewModel, navController = navController) // Pass the navController here
+        3 -> CameraPage(onBack = onBack) // Pass back navigation
     }
+}
 
 
     /*Column (

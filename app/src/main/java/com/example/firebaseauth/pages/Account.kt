@@ -19,20 +19,26 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.firebaseauth.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.firebaseauth.AuthState
+import com.example.firebaseauth.R
 import com.example.firebaseauth.AuthViewModel
 
 @Composable
-fun Account(modifier: Modifier = Modifier, authViewModel: AuthViewModel = viewModel() ) {
+fun Account(
+    modifier: Modifier = Modifier,
+    authViewModel: AuthViewModel = viewModel(),
+    navController: NavController
+) {
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF5F8C60))
-            .padding(horizontal = 10.dp, vertical = 10.dp) // Add padding to prevent overlap with bottom navigation
-            .navigationBarsPadding(), // Adds padding to avoid overlap with system navigation bars
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = 16.dp, vertical = 20.dp) // Adjusted padding
+            .navigationBarsPadding(), // Add padding to avoid overlap with system navigation bars
+        verticalArrangement = Arrangement.Top, // Align content towards the top
+        horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
     ) {
         // Top row with account icon, title, and edit icon
         Row(
@@ -41,7 +47,7 @@ fun Account(modifier: Modifier = Modifier, authViewModel: AuthViewModel = viewMo
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             // Account icon
-            IconButton(onClick = { /* Handle account action */ }) {
+            IconButton(onClick = { /* Handle account details action */ }) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
                     contentDescription = "Account Icon",
@@ -67,7 +73,7 @@ fun Account(modifier: Modifier = Modifier, authViewModel: AuthViewModel = viewMo
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp)) // Increased space after the top row
 
         // Profile Picture
         Image(
@@ -76,52 +82,66 @@ fun Account(modifier: Modifier = Modifier, authViewModel: AuthViewModel = viewMo
             modifier = Modifier.size(100.dp) // Adjust size as needed
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(12.dp)) // Space after the profile picture
 
-        // ID Number
+        // User profile information rows
         UserProfileInfo(label = "ID Number:", value = "764539")
-
-        // User profile information
         UserProfileInfo(label = "Name:", value = "John Doe")
         UserProfileInfo(label = "Address:", value = "456 Elm St, Cityville")
         UserProfileInfo(label = "Contact No:", value = "+9876543210")
-        UserProfileInfo(label = "Age:", value = "32")
         UserProfileInfo(label = "Date of Birth:", value = "February 2, 1992")
         UserProfileInfo(label = "Company Name:", value = "Example Corp")
-        UserProfileInfo(label = "Position:", value = "Developer")
-        UserProfileInfo(label = "Department:", value = "Development")
         UserProfileInfo(label = "Emergency Contact:", value = "+01234")
 
-        Spacer(modifier = Modifier.height(2.dp))
+        Spacer(modifier = Modifier.height(24.dp)) // Extra spacing before Log Out button
 
-
-
-            // Log out button
+        // Log out button
         Button(
-            onClick = { authViewModel.signout() }, // Use instance to call signout()
+            onClick = {
+                authViewModel.signout() // Call signout method
+
+                // Check if signout was successful and navigate
+                if (authViewModel.authState.value is AuthState.Unauthenticated) {
+                    // Navigate to login screen after logout
+                    navController.navigate("login") {
+                        // Clear back stack to ensure the user can't go back to the account screen
+                        popUpTo("account") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            },
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(bottom = 16.dp)
+                .fillMaxWidth() // Make the button span the full width
+                .padding(horizontal = 32.dp) // Add horizontal padding for the button
+                .padding(bottom = 16.dp) // Space at the bottom of the button
         ) {
-            Text(text = "Log Out")
+            Text(
+                text = "Log Out",
+                fontSize = 18.sp, // Reduced font size for button text
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
         }
     }
 }
+
 @Composable
 fun UserProfileInfo(label: String, value: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp), // Added vertical padding between each info line
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = label,
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Bold,
             color = Color.White
         )
         Text(
             text = value,
-            fontSize = 20.sp,
+            fontSize = 18.sp,
             fontWeight = FontWeight.Normal,
             color = Color.White
         )
