@@ -44,7 +44,7 @@ class AuthViewModel : ViewModel() {
 
             }
     }
-    fun signup(email: String, password: String){
+    fun signup(email: String, password: String, password1: String){
 
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("Email or Password Required")

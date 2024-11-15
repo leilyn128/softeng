@@ -12,6 +12,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,6 +33,20 @@ fun Account(
     authViewModel: AuthViewModel = viewModel(),
     navController: NavController
 ) {
+    val authState = authViewModel.authState.observeAsState() // Observing the auth state
+
+    // Watch for changes in the authState to navigate when the user logs out
+    LaunchedEffect(authState.value) {
+        if (authState.value is AuthState.Unauthenticated) {
+            // Navigate to login screen after successful logout
+            navController.navigate("login") {
+                // Clear the back stack so the user can't go back to the account page
+                popUpTo("login") { inclusive = true }
+                launchSingleTop = true // Prevent creating a new instance of the login page if already on it
+            }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -99,16 +115,6 @@ fun Account(
         Button(
             onClick = {
                 authViewModel.signout() // Call signout method
-
-                // Check if signout was successful and navigate
-                if (authViewModel.authState.value is AuthState.Unauthenticated) {
-                    // Navigate to login screen after logout
-                    navController.navigate("login") {
-                        // Clear back stack to ensure the user can't go back to the account screen
-                        popUpTo("account") { inclusive = true }
-                        launchSingleTop = true
-                    }
-                }
             },
             modifier = Modifier
                 .fillMaxWidth() // Make the button span the full width
@@ -147,7 +153,3 @@ fun UserProfileInfo(label: String, value: String) {
         )
     }
 }
-//hurryyyyyyyyyyyyyyyyf
-//hsbyuhcdh
-//hsgyafghsv
-//dnjhbfhjbf
