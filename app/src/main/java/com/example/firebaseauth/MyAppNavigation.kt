@@ -1,5 +1,6 @@
 package com.example.firebaseauth
 
+import AuthViewModel
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
@@ -9,11 +10,15 @@ import com.example.firebaseauth.pages.HomePage
 import com.example.firebaseauth.pages.LoginPage
 import com.example.firebaseauth.pages.SignupPage
 
+
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
     val navController=rememberNavController()
 
-    NavHost(navController= navController, startDestination = "login", builder = {
+    NavHost(navController= navController, startDestination = "login"
+    ){
+
+
             composable("login"){
                  LoginPage(modifier, navController,authViewModel)
             }
@@ -25,5 +30,5 @@ fun MyAppNavigation(modifier: Modifier = Modifier,authViewModel: AuthViewModel){
             }
 
 
-    })
+    }
 }

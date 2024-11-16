@@ -1,8 +1,8 @@
 package com.example.firebaseauth.pages
 
+import AuthViewModel
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -21,13 +21,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavController
-import com.example.firebaseauth.AuthState
-import com.example.firebaseauth.AuthViewModel
+import com.example.firebaseauth.viewmodel.AuthState
+//import com.example.firebaseauth.viewmodel.AuthViewModel
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.ui.text.style.TextAlign
+//import com.example.firebaseauth.viewmodel.AuthViewModel
+
 
 @Composable
 fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {

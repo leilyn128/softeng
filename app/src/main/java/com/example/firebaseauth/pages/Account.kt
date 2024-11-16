@@ -1,5 +1,6 @@
 package com.example.firebaseauth.pages
 
+import AuthViewModel
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -10,7 +11,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.livedata.observeAsState
@@ -23,9 +23,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.firebaseauth.AuthState
+import com.example.firebaseauth.viewmodel.AuthState
 import com.example.firebaseauth.R
-import com.example.firebaseauth.AuthViewModel
+//mport com.example.firebaseauth.viewmodel.AuthViewModel
 
 @Composable
 fun Account(
@@ -33,7 +33,10 @@ fun Account(
     authViewModel: AuthViewModel = viewModel(),
     navController: NavController
 ) {
-    val authState = authViewModel.authState.observeAsState() // Observing the auth state
+    // Observe the authState
+   // val authState = authViewModel.authState.observeAsState()
+    val authState = authViewModel.authState.observeAsState(AuthState.Unauthenticated)
+
 
     // Watch for changes in the authState to navigate when the user logs out
     LaunchedEffect(authState.value) {
@@ -47,22 +50,23 @@ fun Account(
         }
     }
 
+    // Handle loading state if required
+    val loading = authState.value is AuthState.Loading
+    val user = (authState.value as? AuthState.Authenticated)?.user
+
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF5F8C60))
-            .padding(horizontal = 16.dp, vertical = 20.dp) // Adjusted padding
-            .navigationBarsPadding(), // Add padding to avoid overlap with system navigation bars
-        verticalArrangement = Arrangement.Top, // Align content towards the top
-        horizontalAlignment = Alignment.CenterHorizontally // Center the content horizontally
+            .padding(horizontal = 16.dp, vertical = 20.dp),
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Top row with account icon, title, and edit icon
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Account icon
             IconButton(onClick = { /* Handle account details action */ }) {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
@@ -71,7 +75,6 @@ fun Account(
                 )
             }
 
-            // Title
             Text(
                 text = "Profile Details",
                 fontSize = 25.sp,
@@ -79,7 +82,6 @@ fun Account(
                 color = Color.White
             )
 
-            // Edit icon
             IconButton(onClick = { /* Handle edit action */ }) {
                 Icon(
                     imageVector = Icons.Default.Edit,
@@ -89,55 +91,57 @@ fun Account(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp)) // Increased space after the top row
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Profile Picture
         Image(
             painter = painterResource(id = R.drawable.img_1), // Replace with your profile picture resource
             contentDescription = "Profile Picture",
-            modifier = Modifier.size(100.dp) // Adjust size as needed
+            modifier = Modifier.size(100.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp)) // Space after the profile picture
+        Spacer(modifier = Modifier.height(12.dp))
 
-        // User profile information rows
-        UserProfileInfo(label = "ID Number:", value = "764539")
-        UserProfileInfo(label = "Name:", value = "John Doe")
-        UserProfileInfo(label = "Address:", value = "456 Elm St, Cityville")
-        UserProfileInfo(label = "Contact No:", value = "+9876543210")
-        UserProfileInfo(label = "Date of Birth:", value = "February 2, 1992")
-        UserProfileInfo(label = "Company Name:", value = "Example Corp")
-        UserProfileInfo(label = "Emergency Contact:", value = "+01234")
+        if (loading) {
+            Text("Loading...")
+        } else if (user != null) {
+            // User profile information rows
+            UserProfileInfo(label = "ID Number:", value = "764539")
+            UserProfileInfo(label = "Name:", value = user.displayName ?: "Unknown")
+            UserProfileInfo(label = "Email:", value = user.email ?: "No email")
+            UserProfileInfo(label = "Address:", value = "456 Elm St, Cityville")
+            UserProfileInfo(label = "Contact No:", value = "+9876543210")
+            UserProfileInfo(label = "Date of Birth:", value = "February 2, 1992")
+            UserProfileInfo(label = "Company Name:", value = "Example Corp")
+            UserProfileInfo(label = "Emergency Contact:", value = "+01234")
 
-        Spacer(modifier = Modifier.height(24.dp)) // Extra spacing before Log Out button
+            Spacer(modifier = Modifier.height(24.dp))
 
-        // Log out button
-        Button(
-            onClick = {
-                authViewModel.signout() // Call signout method
-            },
-            modifier = Modifier
-                .fillMaxWidth() // Make the button span the full width
-                .padding(horizontal = 32.dp) // Add horizontal padding for the button
-                .padding(bottom = 16.dp) // Space at the bottom of the button
-        ) {
-            Text(
-                text = "Log Out",
-                fontSize = 18.sp, // Reduced font size for button text
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Button(
+                onClick = {
+                    authViewModel.signOut() // Call signout method
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 32.dp)
+                    .padding(bottom = 16.dp)
+            ) {
+                Text(
+                    text = "Log Out",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
-
 
 @Composable
 fun UserProfileInfo(label: String, value: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp), // Added vertical padding between each info line
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(

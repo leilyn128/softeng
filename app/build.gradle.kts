@@ -65,6 +65,8 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.5.0")  // Or the latest version
     implementation ("androidx.compose.material3:material3:1.0.0")  // For Material 3
     implementation ("androidx.compose.material:material-icons-extended:1.5.0") // For icons like Visibility and VisibilityOff
-    
 
+    /*implementation("com.google.android.gms:play-services-maps:18.0.1")
+    implementation("com.google.android.gms:play-services-location:18.0.1") // Use the same version
+    implementation("com.karumi:dexter:6.2.1")*/
 }

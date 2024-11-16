@@ -1,13 +1,17 @@
 package com.example.firebaseauth.pages
 
+import AuthViewModel
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -25,42 +29,60 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.navigation.NavController
-import com.example.firebaseauth.AuthState
-import com.example.firebaseauth.AuthViewModel
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
+import com.example.firebaseauth.viewmodel.AuthState
+//import com.example.firebaseauth.viewmodel.AuthViewModel
 import androidx.compose.ui.text.style.TextAlign
+//import androidx.compose.foundation.scrollable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import android.app.DatePickerDialog
+import android.util.Log
+//import androidx.compose.foundation.DropdownMenu
+//import androidx.compose.foundation.DropdownMenuItem
+import androidx.compose.foundation.clickable
+import java.util.*
 
 @Composable
-fun SignupPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
 
-    val db = FirebaseFirestore.getInstance() // Firestore instance
+fun SignupPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
+    // State variables
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var fullName by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var employeeId by remember { mutableStateOf("") }
+    var address by remember { mutableStateOf("") }
+    var contactNo by remember { mutableStateOf("") }
+    var dob by remember { mutableStateOf("") }  // Date of birth
+    var gender by remember { mutableStateOf("") }  // Gender
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     val authState = authViewModel.authState.observeAsState()
+
     val context = LocalContext.current
 
-    LaunchedEffect(authState.value) {
-        when (authState.value) {
-            is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState.value as AuthState.Error).message,
-                Toast.LENGTH_SHORT
-            ).show()
+    // DatePickerDialog state
+    val calendar = Calendar.getInstance()
 
-            else -> Unit
-        }
+    val datePickerDialog = remember {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                dob = "$dayOfMonth/${month + 1}/$year"
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
     }
+
+
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 64.dp)
+            .padding(top = 48.dp)
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -70,24 +92,40 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
             painter = painterResource(id = com.example.firebaseauth.R.drawable.logo),
             contentDescription = "App Logo",
             modifier = Modifier
-                .size(150.dp)
+                .size(120.dp)
                 .padding(bottom = 16.dp)
         )
 
         // "Sign Up Form" Text with bold style, centered
         Text(
             text = "SIGN UP FORM",
-            fontSize = 30.sp,
+            fontSize = 26.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Full Name Input
+        // Employee ID
         OutlinedTextField(
-            value = fullName,
-            onValueChange = { fullName = it },
-            label = { Text(text = "Full Name") },
+            value = employeeId,
+            onValueChange = { employeeId = it },
+            label = { Text(text = "Employee ID") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = "Employee ID Icon"
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 16.dp)
+        )
+
+        // Full Name
+        OutlinedTextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text(text = "UserName") },
             leadingIcon = {
                 Icon(
                     imageVector = Icons.Default.AccountCircle,
@@ -95,11 +133,68 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
                 )
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.9f)
                 .padding(bottom = 16.dp)
         )
 
-        // Email Input with Icon
+        // Address
+        OutlinedTextField(
+            value = address,
+            onValueChange = { address = it },
+            label = { Text(text = "Address") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = "Address Icon"
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 16.dp)
+        )
+
+        // Contact Number
+        OutlinedTextField(
+            value = contactNo,
+            onValueChange = { contactNo = it },
+            label = { Text(text = "Contact Number") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.Phone,
+                    contentDescription = "Contact Number Icon"
+                )
+            },
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 16.dp)
+        )
+
+        // Date of Birth Input - DatePicker
+        // Date of Birth Input - DatePicker
+        OutlinedTextField(
+            value = dob,
+            onValueChange = {},
+            label = { Text(text = "Date of Birth") },
+            leadingIcon = {
+                Icon(
+                    imageVector = Icons.Default.CalendarToday,
+                    contentDescription = "Date of Birth Icon"
+                )
+            },
+            readOnly = true, // Keep it read-only so the user cannot type manually
+            modifier = Modifier
+                .fillMaxWidth(0.9f)
+                .padding(bottom = 16.dp)
+                .clickable {
+                    // Open the DatePickerDialog on click
+                    Log.d("DateField", "Date field clicked, showing dialog")
+                    datePickerDialog.show()
+                }
+        )
+
+
+        // Email
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
@@ -111,11 +206,11 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
                 )
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.9f)
                 .padding(bottom = 16.dp)
         )
 
-        // Password Input with Show/Hide Toggle
+        // Password with Show/Hide Toggle
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
@@ -137,11 +232,11 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
                 }
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.9f)
                 .padding(bottom = 16.dp)
         )
 
-        // Confirm Password Input with Show/Hide Toggle
+        // Confirm Password with Show/Hide Toggle
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
@@ -163,7 +258,7 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
                 }
             },
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.9f)
                 .padding(bottom = 15.dp)
         )
 
@@ -171,94 +266,47 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
         Button(
             onClick = {
                 if (password == confirmPassword) {
-                    // Create the user in Firebase Authentication
-                    FirebaseAuth.getInstance().createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener { task ->
-                            if (task.isSuccessful) {
-                                val user = FirebaseAuth.getInstance().currentUser
-                                val userId = user?.uid
+                    // Firebase registration logic here
 
-                                // Save user data to Firestore
-                                if (userId != null) {
-                                    val userMap = hashMapOf(
-                                        "fullName" to fullName,
-                                        "email" to email
-                                    )
-                                    db.collection("users").document(userId).set(userMap)
-                                        .addOnSuccessListener {
-                                            // Show success message
-                                            Toast.makeText(
-                                                context,
-                                                "Successfully Registered",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-
-                                            // Clear input fields
-                                            fullName = ""
-                                            email = ""
-                                            password = ""
-                                            confirmPassword = ""
-
-                                            // Now navigate to the home screen
-                                            navController.navigate("home") {
-                                                // Clear the back stack so that user can't navigate back to the signup page
-                                                popUpTo("signup") { inclusive = true }
-                                            }
-                                        }
-                                        .addOnFailureListener {
-                                            Toast.makeText(
-                                                context,
-                                                "Failed to save user data!",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                }
-                            } else {
-                                // If user creation failed
-                                Toast.makeText(
-                                    context,
-                                    "Registration failed: ${task.exception?.message}",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        }
+                    // After successful registration, navigate to Home Page
+                    navController.navigate("home") // Assuming "home" is your homepage route
                 } else {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
             },
             enabled = authState.value != AuthState.Loading,
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.9f)
                 .padding(bottom = 16.dp)
         ) {
             Text(
                 text = "Sign Up",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
+                fontSize = 20.sp
             )
         }
 
-// Already have an account? Login Row
+        // Already have an account? Login Link
         Row(
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = "Already have an account? ",
-                fontSize = 20.sp // Adjust the font size as needed
+                fontSize = 20.sp
             )
 
             TextButton(
                 onClick = {
                     navController.navigate("login")
                 },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Blue) // Set color to blue
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Blue)
             ) {
                 Text(
                     text = "Login",
-                    fontSize = 20.sp // Adjust the font size as needed
+                    fontSize = 20.sp
                 )
             }
         }
-
     }
 }
