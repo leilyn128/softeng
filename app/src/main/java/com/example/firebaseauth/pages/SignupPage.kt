@@ -238,5 +238,27 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
             )
         }
 
+// Already have an account? Login Row
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Already have an account? ",
+                fontSize = 20.sp // Adjust the font size as needed
+            )
+
+            TextButton(
+                onClick = {
+                    navController.navigate("login")
+                },
+                colors = ButtonDefaults.textButtonColors(contentColor = Color.Blue) // Set color to blue
+            ) {
+                Text(
+                    text = "Login",
+                    fontSize = 20.sp // Adjust the font size as needed
+                )
+            }
+        }
+
     }
 }

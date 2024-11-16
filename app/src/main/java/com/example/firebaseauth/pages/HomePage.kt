@@ -1,5 +1,6 @@
 package com.example.firebaseauth.pages
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,38 +35,41 @@ import com.example.firebaseauth.ui.theme.NavItem
 //import com.example.firebaseauth.NavItem
 
 @Composable
-fun HomePage(modifier: Modifier = Modifier, navController: NavController,authViewModel: AuthViewModel) {
-
-    val authState = authViewModel.authState.observeAsState()
+fun HomePage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel = viewModel()
+) {
+    val authState by authViewModel.authState.observeAsState() // Observing authentication state
     var selectedIndex by remember { mutableStateOf(0) }
-    var timeInput by remember { mutableStateOf("") } // To hold the time from CameraPage
-    var isLoggedOut by remember {  mutableStateOf(false) }
+    var timeInput by remember { mutableStateOf("") }
 
+    // Navigate to the login screen if the user is unauthenticated
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Unauthenticated) {
+            Log.d("HomePage", "User is unauthenticated, navigating to login.")
+            navController.navigate("login") {
+                popUpTo("home") { inclusive = true } // Clear back stack
+                launchSingleTop = true // Avoid stacking multiple login screens
+            }
+        }
+    }
+
+    // Navigation items for the bottom bar
     val navItemList = listOf(
         NavItem("Map", Icons.Default.LocationOn),
         NavItem("DTR", Icons.Default.DateRange),
         NavItem("Account", Icons.Default.AccountCircle)
     )
 
-    LaunchedEffect(authState.value) {
-        when(authState.value){
-            is AuthState.Unauthenticated -> navController.navigate("login")
-            else -> Unit
-
-        }
-    }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
-            if (!isLoggedOut )
             NavigationBar {
                 navItemList.forEachIndexed { index, navItem ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
-                        onClick = {
-                            selectedIndex = index
-                        },
+                        onClick = { selectedIndex = index },
                         icon = { Icon(imageVector = navItem.icon, contentDescription = navItem.label) },
                         label = { Text(text = navItem.label) }
                     )
@@ -73,26 +77,23 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController,authVie
             }
         }
     ) { innerPadding ->
+        // Screen content based on the selected tab
         ContentScreen(
             modifier = Modifier.padding(innerPadding),
             selectedIndex = selectedIndex,
-           // isLoggedOut= isLoggedOut,
-            //onLogout={ isLoggedOut=true},
             onNavigateToCamera = { onBack ->
-                selectedIndex = 3 // Set to 3 to navigate to CameraPage
-                onBack(timeInput) // Capture the time input when navigating back
-                                 // isLoggedOut= isLoggedOut
-
+                selectedIndex = 3 // Navigate to CameraPage
+                onBack(timeInput) // Pass time input back when done
             },
             onBack = { time ->
-                timeInput = time // Store the time from CameraPage
-                selectedIndex = 1 // Go back to DTR page
-            }
+                timeInput = time // Capture returned time from CameraPage
+                selectedIndex = 1 // Navigate back to DTR
+            },
+            authViewModel = authViewModel, // Pass authViewModel for Account page
+            navController = navController // Pass navController for Account page
         )
     }
 }
-
-
 
 @Composable
 fun ContentScreen(
@@ -100,41 +101,19 @@ fun ContentScreen(
     selectedIndex: Int,
     onNavigateToCamera: (onBack: (String) -> Unit) -> Unit,
     onBack: (String) -> Unit,
-    authViewModel: AuthViewModel = viewModel() // Obtain ViewModel instance by default
+    authViewModel: AuthViewModel,
+    navController: NavController
 ) {
-    // Create NavController using rememberNavController
-    val navController = rememberNavController()
-
-    // Navigation logic based on the selected index
     when (selectedIndex) {
-        0 -> MapPage(modifier = modifier) // Ensure MapPage accepts this modifier
-        1 -> DTR(onNavigateToCamera = onNavigateToCamera) // Pass the callback
-        2 -> Account(modifier = modifier, authViewModel = authViewModel, navController = navController) // Pass the navController here
-        3 -> CameraPage(onBack = onBack) // Pass back navigation
+        0 -> MapPage(modifier = modifier)
+        1 -> DTR(onNavigateToCamera = onNavigateToCamera)
+        2 -> Account(
+            modifier = modifier,
+            authViewModel = authViewModel,
+            navController = navController
+        )
+        3 -> CameraPage(onBack = onBack)
     }
 }
-
-
-    /*Column (
-        modifier = modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        Text(text ="Home Page", fontSize = 32.sp)
-
-        TextButton(onClick = {
-            authViewModel.signout()
-        }) {
-            Text(text ="Sign out")*/
-
-
-   /* val navItemList = listOf(
-        NavItem("Map", Icons.Default.LocationOn),
-        NavItem("DTR", Icons.Default.DateRange),
-        NavItem("Account", Icons.Default.AccountCircle)
-    )*/
-
-
-
 
 

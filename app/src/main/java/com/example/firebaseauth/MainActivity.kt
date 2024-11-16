@@ -8,23 +8,33 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.firebaseauth.ui.theme.FirebaseAuthTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        val authViewModel : AuthViewModel by viewModels()
+        enableEdgeToEdge() // Enable immersive edge-to-edge UI
+        val authViewModel: AuthViewModel by viewModels() // ViewModel scoped to Activity lifecycle
+
         setContent {
             FirebaseAuthTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MyAppNavigation(modifier=Modifier.padding(innerPadding), authViewModel = authViewModel )
-                }
+                MainContent(authViewModel = authViewModel)
             }
         }
     }
 }
+
+@Composable
+fun MainContent(authViewModel: AuthViewModel) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+    ) { innerPadding ->
+        MyAppNavigation(
+            modifier = Modifier.padding(innerPadding),
+            authViewModel = authViewModel
+        )
+    }
+}
+

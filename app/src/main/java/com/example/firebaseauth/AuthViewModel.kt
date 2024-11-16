@@ -1,5 +1,6 @@
 package com.example.firebaseauth
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -66,11 +67,11 @@ class AuthViewModel : ViewModel() {
     }
 
     fun signout() {
+        Log.d("AuthViewModel", "Sign out called")
         auth.signOut()
         _authState.value = AuthState.Unauthenticated
+        Log.d("AuthViewModel", "User signed out, authState set to Unauthenticated")
     }
-
-
 
 
 
