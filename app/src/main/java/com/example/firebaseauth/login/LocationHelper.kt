@@ -22,11 +22,11 @@ class LocationHelper(
 ) {
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
-    // Updated LocationRequest initialization
+    // LocationRequest initialization
     private val locationRequest = LocationRequest.Builder(
         Priority.PRIORITY_HIGH_ACCURACY, 5000L
-    ).setMinUpdateIntervalMillis(2000L)
-        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+    ).setMinUpdateIntervalMillis(2000L)  // Set the update frequency to every 2 seconds
+        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)  // Use high accuracy for best location updates
         .build()
 
     private val locationCallback = object : LocationCallback() {
@@ -40,6 +40,7 @@ class LocationHelper(
         }
     }
 
+    // Starts location updates, handles permission request
     fun startLocationUpdates(activity: ComponentActivity) {
         val permissionLauncher = activity.registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -51,28 +52,28 @@ class LocationHelper(
             }
         }
 
+        // Check for location permission, request if necessary
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            // Request location permission
+            ) != PackageManager.PERMISSION_GRANTED) {
             permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         } else {
             requestLocationUpdates()
         }
     }
 
+    // Requests location updates after permission is granted
     private fun requestLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+            ) == PackageManager.PERMISSION_GRANTED) {
             fusedLocationProviderClient.requestLocationUpdates(
                 locationRequest, locationCallback, null
             )
         }
     }
 
+    // Stops location updates when no longer needed
     fun stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }

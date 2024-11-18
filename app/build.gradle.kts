@@ -69,11 +69,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // Compose dependencies
-    implementation("androidx.compose.ui:ui:1.5.0")
-    implementation("androidx.compose.material3:material3:1.2.0") // Update to latest
-    implementation("androidx.compose.material:material-icons-extended:1.5.0")
-
     // Google Maps and Location
     implementation("com.google.android.gms:play-services-maps:18.1.0") // Updated version
     implementation("com.google.android.gms:play-services-location:21.0.1") // Latest version
@@ -83,4 +78,20 @@ dependencies {
 
     // Optional: Coroutines for better async handling
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Google Maps Compose
+    implementation("com.google.maps.android:maps-compose:2.0.0")
+
+    // Jetpack Compose dependencies
+    implementation("androidx.compose.ui:ui:1.4.0")
+    implementation("androidx.compose.material3:material3:1.2.0") // Update to latest
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+
+    // Other dependencies like lifecycle, viewmodel, etc.
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    implementation ("androidx.compose.material:material:1.5.0")
+    implementation ("androidx.compose.material:material-icons-extended:1.5.0")
+
+
 }

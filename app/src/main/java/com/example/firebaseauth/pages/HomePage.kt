@@ -1,33 +1,25 @@
 package com.example.firebaseauth.pages
 
-import AuthViewModel
 import android.util.Log
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+//import com.example.firebaseauth.AuthViewModel
 import com.example.firebaseauth.viewmodel.AuthState
-//import com.example.firebaseauth.viewmodel.AuthViewModel
 import com.example.firebaseauth.ui.theme.NavItem
-
-//import com.example.firebaseauth.NavItem
+import com.example.googlemappage.MapPage
+import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun HomePage(
@@ -35,17 +27,23 @@ fun HomePage(
     navController: NavController,
     authViewModel: AuthViewModel = viewModel()
 ) {
-    val authState by authViewModel.authState.observeAsState() // Observing authentication state
+    val authState by authViewModel.authState.observeAsState()
     var selectedIndex by remember { mutableStateOf(0) }
     var timeInput by remember { mutableStateOf("") }
+    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
 
-    // Navigate to the login screen if the user is unauthenticated
+    // Simulating fetching the current location (replace with actual location logic)
+    LaunchedEffect(Unit) {
+        currentLocation = LatLng(37.7749, -122.4194) // Example location: San Francisco
+    }
+
+    // Handle unauthenticated state
     LaunchedEffect(authState) {
         if (authState is AuthState.Unauthenticated) {
             Log.d("HomePage", "User is unauthenticated, navigating to login.")
             navController.navigate("login") {
-                popUpTo("home") { inclusive = true } // Clear back stack
-                launchSingleTop = true // Avoid stacking multiple login screens
+                popUpTo("home") { inclusive = true }
+                launchSingleTop = true
             }
         }
     }
@@ -58,7 +56,7 @@ fun HomePage(
     )
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         bottomBar = {
             NavigationBar {
                 navItemList.forEachIndexed { index, navItem ->
@@ -72,20 +70,20 @@ fun HomePage(
             }
         }
     ) { innerPadding ->
-        // Screen content based on the selected tab
         ContentScreen(
             modifier = Modifier.padding(innerPadding),
             selectedIndex = selectedIndex,
             onNavigateToCamera = { onBack ->
                 selectedIndex = 3 // Navigate to CameraPage
-                onBack(timeInput) // Pass time input back when done
+                onBack(timeInput)
             },
             onBack = { time ->
-                timeInput = time // Capture returned time from CameraPage
-                selectedIndex = 1 // Navigate back to DTR
+                timeInput = time
+                selectedIndex = 1 // Navigate back to DTR after CameraPage
             },
-            authViewModel = authViewModel, // Pass authViewModel for Account page
-            navController = navController // Pass navController for Account page
+            authViewModel = authViewModel,
+            navController = navController,
+            currentLocation = currentLocation
         )
     }
 }
@@ -97,10 +95,11 @@ fun ContentScreen(
     onNavigateToCamera: (onBack: (String) -> Unit) -> Unit,
     onBack: (String) -> Unit,
     authViewModel: AuthViewModel,
-    navController: NavController
+    navController: NavController,
+    currentLocation: LatLng?
 ) {
     when (selectedIndex) {
-        0 -> MapPage(modifier = modifier)
+        0 -> MapPage(modifier = modifier, currentLocation = currentLocation)
         1 -> DTR(onNavigateToCamera = onNavigateToCamera)
         2 -> Account(
             modifier = modifier,
@@ -110,5 +109,3 @@ fun ContentScreen(
         3 -> CameraPage(onBack = onBack)
     }
 }
-
-

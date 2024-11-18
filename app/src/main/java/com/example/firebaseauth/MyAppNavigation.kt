@@ -50,6 +50,12 @@ fun MyAppNavigation(
             // Display the Map page if authenticated
             MapPage(modifier = modifier, currentLocation = currentLocation)
         }
+
+
+
+
+
+
     }
 }
 

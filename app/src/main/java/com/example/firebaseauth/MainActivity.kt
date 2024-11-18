@@ -14,9 +14,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import com.example.firebaseauth.ui.theme.FirebaseAuthTheme
-import com.example.googlemappage.LocationHelper
+//import com.example.googlemappage.LocationHelper
 import com.example.googlemappage.MapPage
 import com.google.android.gms.maps.model.LatLng
+import com.example.firebaseauth.login.LocationHelper
+
 
 class MainActivity : ComponentActivity() {
     private lateinit var locationHelper: LocationHelper
