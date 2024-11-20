@@ -3,16 +3,11 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavController
-import com.example.firebaseauth.model.UserModel
+import com.example.firebaseauth.login.UserModel
 import com.example.firebaseauth.viewmodel.AuthState
-import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
-//import com.google.firebase.firestore.Timestamp
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -25,6 +20,9 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
     val authStatus: MutableLiveData<AuthState.AuthResult> = MutableLiveData()
     val errorMessage: MutableLiveData<String> = MutableLiveData()
     val isLoading: MutableLiveData<Boolean> = MutableLiveData()
+
+    val isAuthenticated: Boolean
+        get() = FirebaseAuth.getInstance().currentUser != null
 
     init {
         checkAuthState()
@@ -39,17 +37,18 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    // Updated login function
     fun login(email: String, password: String) {
-        _authState.value = AuthState.Loading
+        _authState.value = AuthState.Loading // Indicate loading state
 
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val user = auth.currentUser
-                    _authState.value = if (user != null) {
-                        AuthState.Authenticated(user)
+                    if (user != null) {
+                        _authState.value = AuthState.Authenticated(user) // Update to authenticated
                     } else {
-                        AuthState.Unauthenticated
+                        _authState.value = AuthState.Unauthenticated // Handle null user case
                     }
                 } else {
                     _authState.value = AuthState.Error("Authentication failed: ${task.exception?.message}")
@@ -57,6 +56,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    // Validate input fields during account creation
     fun validateAccount(email: String, password: String, username: String, confirmPassword: String): Boolean {
         if (email.isBlank() || !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             errorMessage.value = "Invalid email format."
@@ -97,9 +97,6 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
         isLoading.value = true
 
-        // Convert dateOfBirth String to Timestamp
-        val dateOfBirthTimestamp = convertToTimestamp(dateOfBirth)
-
         // Create user with Firebase Authentication
         auth.createUserWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
@@ -113,8 +110,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                             username = username,
                             accountType = accountType,
                             address = address,
-                            contactNumber = contactNumber,
-                            dateOfBirth = dateOfBirthTimestamp // Use Timestamp here
+                            contactNumber = contactNumber
                         )
                         saveUserToFirestore(userModel)
                     }
@@ -125,18 +121,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             }
     }
 
+    // Save user data to Firestore
     private fun saveUserToFirestore(user: UserModel) {
-        val currentUser: FirebaseUser? = auth.currentUser  // Get the current authenticated user from FirebaseAuth
+        val currentUser: FirebaseUser? = auth.currentUser
         currentUser?.let {
             val userRef = db.collection("users").document(it.uid)
             userRef.set(user)
                 .addOnSuccessListener {
-                    // Pass the FirebaseUser to AuthResult.Success
                     authStatus.value = AuthState.AuthResult.Success(currentUser)
-
-
                 }
-
                 .addOnFailureListener { exception ->
                     errorMessage.value = "Error saving data: ${exception.message}"
                     authStatus.value = AuthState.AuthResult.Failure(exception.message)
@@ -144,27 +137,19 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-
+    // Sign out the current user
     fun signOut() {
         try {
             auth.signOut()
-            _authState.value = AuthState.Unauthenticated // Set the state to unauthenticated
+            _authState.value = AuthState.Unauthenticated
             authStatus.value = AuthState.AuthResult.LoggedOut
         } catch (e: Exception) {
             errorMessage.value = "Error logging out: ${e.message}"
         }
     }
 
-
-
+    // Get the current authenticated user
     fun getCurrentUser(): FirebaseUser? {
         return auth.currentUser
     }
-
-    private fun convertToTimestamp(dateOfBirth: String): Timestamp {
-        val format = SimpleDateFormat("dd/MM/yyyy", Locale.US) // Use your preferred date format
-        val date: Date = format.parse(dateOfBirth)
-        return Timestamp(date)
-    }
 }
-

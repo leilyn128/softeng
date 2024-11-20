@@ -1,4 +1,4 @@
-package com.example.firebaseauth.pages
+package com.example.googlemappage
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -12,82 +12,100 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.MarkerState
 import com.example.firebaseauth.R
 
 @Composable
-fun MapPage(modifier: Modifier = Modifier) {
-    var showDialog by remember { mutableStateOf(true) } // Set to true to show dialog on start
+fun MapPage(modifier: Modifier = Modifier, currentLocation: LatLng?) {
+    var showDialog by remember { mutableStateOf(false) }
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(Color(0xFF5F8C60)) // Background color
-    ) {
-        // Background Image filling the bottom
-        // for the user just change the geo
-        Image(
-            painter = painterResource(id = R.drawable.img_4), // Replace with your image resource
-            contentDescription = "Background Image",
-            modifier = Modifier
-                .size(500.dp) // Set the desired size for the image
-                .align(Alignment.CenterStart) // Align the image to the bottom center
-        )
-
-        // Top layout with logo, title, and notification icon
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp), // Padding around the row
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween // Space between elements
-        ) {
-            // Logo on the left
-            Image(
-                painter = painterResource(id = R.drawable.logo), // Replace with your image resource
-                contentDescription = "Top Left Logo",
+    // Using Scaffold to handle layout and bottom navigation space
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        containerColor = Color(0xFF5F8C60), // Set the background color here
+        topBar = {
+            // Top Row
+            Row(
                 modifier = Modifier
-                    .size(80.dp) // Set the desired size for the image
-            )
-
-            // Title in the center
-            // for the user just change the text
-            Text(
-                text = "LOCATION",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color.White,
-                modifier = Modifier.weight(1f), // Takes remaining space
-                textAlign = androidx.compose.ui.text.style.TextAlign.Center // Center the title text
-            )
-
-            // Notification icon on the right
-            IconButton(onClick = {
-                showDialog = true // Show dialog when icon is clicked
-            }) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notifications",
-                    tint = Color.White
+                    .fillMaxWidth()
+                    .padding(12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Top Left Logo",
+                    modifier = Modifier.size(80.dp)
                 )
+                Text(
+                    text = "LOCATION",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White,
+                    modifier = Modifier.weight(1f),
+                    textAlign = TextAlign.Center
+                )
+                IconButton(onClick = { showDialog = true }) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notifications",
+                        tint = Color.White
+                    )
+                }
+            }
+        },
+        content = { innerPadding ->
+            // Google Map Section with padding to avoid overlap with bottom navigation
+            Column(modifier = Modifier
+                .padding(innerPadding)
+                .fillMaxSize() // Ensure Column takes up full screen
+                .background(Color(0xFF5F8C60)) // Background color applied here
+            ) {
+                if (currentLocation != null) {
+                    val cameraPositionState = rememberCameraPositionState {
+                        position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
+                    }
+
+                    GoogleMap(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(bottom = 56.dp),  // Adjust for bottom navigation height
+                        cameraPositionState = cameraPositionState
+                    ) {
+                        Marker(
+                            state = MarkerState(position = currentLocation),
+                            title = "Current Location"
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Fetching location...",
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    )
+                }
             }
         }
+    )
 
-        // Popup dialog for notification
-        if (showDialog) {
-            AlertDialog(
-                onDismissRequest = { showDialog = false },
-                title = { Text(text = "Location Required") },
-                text = { Text("Please turn on your location.") },
-                confirmButton = {
-                    TextButton(onClick = { showDialog = false }) {
-                        Text("OK")
-                    }
-                },
-                modifier = Modifier.padding(16.dp)
-            )
-        }
+    // Notification Dialog
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(text = "Location Required") },
+            text = { Text("Please turn on your location.") },
+            confirmButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("OK")
+                }
+            }
+        )
     }
 }
-//hguguhb

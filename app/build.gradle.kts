@@ -17,6 +17,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Ensure to include the location hardware feature
+        manifestPlaceholders["usesCleartextTraffic"] = true
     }
 
     buildTypes {
@@ -28,20 +31,26 @@ android {
             )
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
+
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
+
     buildFeatures {
         compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.0" // Ensure compatibility with Compose UI
     }
 }
 
 dependencies {
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -54,6 +63,29 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.firestore)
+
+    // Google Maps and Location
+    implementation("com.google.android.gms:play-services-maps:18.1.0") // Updated version
+    implementation("com.google.android.gms:play-services-location:21.0.1") // Latest version
+
+    // Permission handling (Dexter library)
+    implementation("com.karumi:dexter:6.2.3")
+
+    // Optional: Coroutines for better async handling
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+    // Google Maps Compose
+    implementation("com.google.maps.android:maps-compose:2.0.0")
+
+    // Jetpack Compose dependencies
+    implementation("androidx.compose.ui:ui:1.4.0")
+    implementation("androidx.compose.material3:material3:1.2.0") // Update to latest
+    implementation("androidx.compose.material:material-icons-extended:1.5.0")
+
+    // Other dependencies like lifecycle, viewmodel, etc.
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.1")
+
+    // Testing dependencies
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,11 +94,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation ("androidx.compose.ui:ui:1.5.0")  // Or the latest version
+    implementation ("androidx.compose.material:material:1.5.0")  // Or the latest version
     implementation ("androidx.compose.material3:material3:1.0.0")  // For Material 3
     implementation ("androidx.compose.material:material-icons-extended:1.5.0") // For icons like Visibility and VisibilityOff
-
-    /*implementation("com.google.android.gms:play-services-maps:18.0.1")
-    implementation("com.google.android.gms:play-services-location:18.0.1") // Use the same version
-    implementation("com.karumi:dexter:6.2.1")*/
 }
