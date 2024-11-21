@@ -1,111 +1,104 @@
 package com.example.googlemappage
 
-import androidx.compose.foundation.Image
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material3.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.MarkerState
-import com.example.firebaseauth.R
+import com.example.firebaseauth.login.LocationHelper
 
 @Composable
-fun MapPage(modifier: Modifier = Modifier, currentLocation: LatLng?) {
-    var showDialog by remember { mutableStateOf(false) }
+fun MapPage(
+    modifier: Modifier = Modifier
+) {
+    // State to hold the user's current location
+    var currentLocation by remember { mutableStateOf<LatLng?>(null) }
 
-    // Using Scaffold to handle layout and bottom navigation space
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        containerColor = Color(0xFF5F8C60), // Set the background color here
-        topBar = {
-            // Top Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.logo),
-                    contentDescription = "Top Left Logo",
-                    modifier = Modifier.size(80.dp)
-                )
-                Text(
-                    text = "LOCATION",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White,
-                    modifier = Modifier.weight(1f),
-                    textAlign = TextAlign.Center
-                )
-                IconButton(onClick = { showDialog = true }) {
-                    Icon(
-                        imageVector = Icons.Default.Notifications,
-                        contentDescription = "Notifications",
-                        tint = Color.White
-                    )
-                }
-            }
-        },
-        content = { innerPadding ->
-            // Google Map Section with padding to avoid overlap with bottom navigation
-            Column(modifier = Modifier
-                .padding(innerPadding)
-                .fillMaxSize() // Ensure Column takes up full screen
-                .background(Color(0xFF5F8C60)) // Background color applied here
-            ) {
-                if (currentLocation != null) {
-                    val cameraPositionState = rememberCameraPositionState {
-                        position = CameraPosition.fromLatLngZoom(currentLocation, 15f)
-                    }
+    // Get the current context
+    val context = LocalContext.current
+    val activity = context as? ComponentActivity
 
-                    GoogleMap(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(bottom = 56.dp),  // Adjust for bottom navigation height
-                        cameraPositionState = cameraPositionState
-                    ) {
-                        Marker(
-                            state = MarkerState(position = currentLocation),
-                            title = "Current Location"
-                        )
-                    }
-                } else {
-                    Text(
-                        text = "Fetching location...",
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                }
-            }
+    // Initialize LocationHelper with a callback to update currentLocation
+    val locationHelper = remember {
+        LocationHelper(context) { location ->
+            currentLocation = location
         }
-    )
+    }
 
-    // Notification Dialog
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(text = "Location Required") },
-            text = { Text("Please turn on your location.") },
-            confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("OK")
-                }
+    // Permission launcher for ACCESS_FINE_LOCATION
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            locationHelper.startLocationUpdates()
+            Toast.makeText(context, "Location permission granted", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Request permission on first composition
+    LaunchedEffect(Unit) {
+        if (ActivityCompat.checkSelfPermission(
+                context, Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        } else {
+            locationHelper.startLocationUpdates()
+        }
+    }
+
+    // Stop location updates when the composable is disposed
+    DisposableEffect(Unit) {
+        onDispose {
+            locationHelper.stopLocationUpdates()
+        }
+    }
+
+    // Google Map Section
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        if (currentLocation != null) {
+            val cameraPositionState = rememberCameraPositionState {
+                position = CameraPosition.fromLatLngZoom(currentLocation!!, 15f)
             }
-        )
+
+            GoogleMap(
+                modifier = Modifier.fillMaxSize(),
+                cameraPositionState = cameraPositionState
+            ) {
+                Marker(
+                    state = MarkerState(position = currentLocation!!),
+                    title = "Current Location"
+                )
+            }
+        } else {
+            androidx.compose.material3.Text(
+                text = "Fetching location...",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color.Gray
+            )
+        }
     }
 }

@@ -1,7 +1,9 @@
 package com.example.firebaseauth.pages
 
+import AuthViewModel
 import android.util.Log
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -9,7 +11,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.firebaseauth.viewmodel.AuthState
@@ -84,6 +88,7 @@ fun HomePage(
     }
 }
 
+
 @Composable
 fun ContentScreen(
     modifier: Modifier = Modifier,
@@ -95,7 +100,7 @@ fun ContentScreen(
     currentLocation: LatLng?
 ) {
     when (selectedIndex) {
-        0 -> MapPage(modifier = modifier, currentLocation = currentLocation)
+        0 -> MapPage(modifier = modifier,  )
         1 -> DTR(onNavigateToCamera = onNavigateToCamera)
         2 -> Account(
             modifier = modifier,

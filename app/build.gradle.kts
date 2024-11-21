@@ -76,6 +76,7 @@ dependencies {
 
     // Google Maps Compose
     implementation("com.google.maps.android:maps-compose:2.0.0")
+    implementation ("com.google.accompanist:accompanist-permissions:0.33.0-alpha")
 
     // Jetpack Compose dependencies
     implementation("androidx.compose.ui:ui:1.4.0")
@@ -97,4 +98,9 @@ dependencies {
     implementation ("androidx.compose.material:material:1.5.0")  // Or the latest version
     implementation ("androidx.compose.material3:material3:1.0.0")  // For Material 3
     implementation ("androidx.compose.material:material-icons-extended:1.5.0") // For icons like Visibility and VisibilityOff
+
+    implementation ("androidx.compose.runtime:runtime-livedata:1.6.0")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.8.2")
+
+
 }

@@ -17,16 +17,16 @@ import com.google.android.gms.location.LocationServices
 
 
 class LocationHelper(
-    private val context: Context,
-    private val onLocationUpdate: (LatLng) -> Unit
+private val context: Context,
+private val onLocationUpdate: (LatLng) -> Unit
 ) {
     private val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
 
     // LocationRequest initialization
     private val locationRequest = LocationRequest.Builder(
         Priority.PRIORITY_HIGH_ACCURACY, 5000L
-    ).setMinUpdateIntervalMillis(2000L)  // Set the update frequency to every 2 seconds
-        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)  // Use high accuracy for best location updates
+    ).setMinUpdateIntervalMillis(2000L)  // Update frequency every 2 seconds
+        .setPriority(Priority.PRIORITY_HIGH_ACCURACY)  // High accuracy
         .build()
 
     private val locationCallback = object : LocationCallback() {
@@ -34,36 +34,15 @@ class LocationHelper(
             val location: Location? = locationResult.lastLocation
             location?.let {
                 val latLng = LatLng(it.latitude, it.longitude)
-                Log.d("LocationHelper", "Updated Location: $latLng")
                 onLocationUpdate(latLng)
             }
         }
     }
 
-    // Starts location updates, handles permission request
-    fun startLocationUpdates(activity: ComponentActivity) {
-        val permissionLauncher = activity.registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
-            if (isGranted) {
-                requestLocationUpdates()
-            } else {
-                Toast.makeText(context, "Location permission denied", Toast.LENGTH_SHORT).show()
-            }
-        }
 
-        // Check for location permission, request if necessary
-        if (ActivityCompat.checkSelfPermission(
-                context, Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED) {
-            permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        } else {
-            requestLocationUpdates()
-        }
-    }
-
-    // Requests location updates after permission is granted
-    private fun requestLocationUpdates() {
+    // Starts location updates (without permission handling)
+    fun startLocationUpdates(){
+        // Start location updates only if permission is granted
         if (ActivityCompat.checkSelfPermission(
                 context, Manifest.permission.ACCESS_FINE_LOCATION
             ) == PackageManager.PERMISSION_GRANTED) {
@@ -72,8 +51,7 @@ class LocationHelper(
             )
         }
     }
-
-    // Stops location updates when no longer needed
+    // Stops location updates
     fun stopLocationUpdates() {
         fusedLocationProviderClient.removeLocationUpdates(locationCallback)
     }

@@ -1,72 +1,115 @@
 package com.example.firebaseauth
 
 import AuthViewModel
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
+import android.util.Log
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.example.firebaseauth.ui.theme.FirebaseAuthTheme
+import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.firebaseauth.login.LocationHelper
+import com.example.firebaseauth.pages.HomePage
+import com.example.firebaseauth.pages.LoginPage
+import com.example.firebaseauth.pages.SignupPage
+import com.example.firebaseauth.viewmodel.AuthState
 import com.example.googlemappage.MapPage
 import com.google.android.gms.maps.model.LatLng
-import com.example.firebaseauth.login.LocationHelper
+import kotlin.math.sign
+import androidx.compose.runtime.*
 
-
-class MainActivity : ComponentActivity() {
-    private lateinit var locationHelper: LocationHelper
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // Enable immersive edge-to-edge UI
-
-        val authViewModel: AuthViewModel by viewModels() // ViewModel scoped to Activity lifecycle
-
-        // MutableState to hold the user's current location
-        val currentLocation = mutableStateOf<LatLng?>(null)
-
-        // Initialize LocationHelper with context and location callback
-        locationHelper = LocationHelper(this) { latLng ->
-            currentLocation.value = latLng
-        }
-
-        // Start location updates
-        locationHelper.startLocationUpdates(this)
-
-        setContent {
-            FirebaseAuthTheme {
-                MainContent(
-                    authViewModel = authViewModel,
-                    currentLocation = currentLocation.value
-                )
-            }
-        }
-    }
-
-    override fun onStop() {
-        super.onStop()
-        locationHelper.stopLocationUpdates()
-    }
+// Define your screens
+sealed class Screen(val route: String) {
+    object Login : Screen("login")
+    object Signup : Screen("signup")
+    object Home : Screen("home")
+    object Map : Screen("map")
 }
 
 @Composable
-fun MainContent(
+fun MyAppNavigation(
+    modifier: Modifier = Modifier,
     authViewModel: AuthViewModel,
-    currentLocation: LatLng?
+    currentLocation: LatLng? = null
+
+
 ) {
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-    ) { innerPadding ->
-        MyAppNavigation(
-            modifier = Modifier.padding(innerPadding),
-            authViewModel = authViewModel,
-            currentLocation = currentLocation
+    val navController = rememberNavController()
+
+    val isAuthenticated = authViewModel.isAuthenticated
+
+    val context = LocalContext.current
+
+    val authState by authViewModel.authState.observeAsState(AuthState.Unauthenticated)
+    //val authState = authViewModel.authState.observeAsState(AuthState.Unauthenticated).value
+
+
+    // Create a LocationHelper instance
+    val locationHelper = remember {
+        LocationHelper(
+            context = context,
+            onLocationUpdate = {} // We will pass the update logic to the MapPage
         )
+    }
+
+
+    NavHost(
+        navController = navController,
+        startDestination = if (authState is AuthState.Authenticated) Screen.Home.route else Screen.Login.route
+    ) {
+        // Define your composable screens here
+
+
+    // Login Page
+        composable(Screen.Login.route) {
+            LoginPage(
+                modifier = modifier,
+                navController = navController,
+                authViewModel = authViewModel,
+                onLoginSuccess = {
+                    // Navigate to Home on successful login
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        // Signup Page
+        composable(Screen.Signup.route) {
+            SignupPage(
+                modifier = modifier,
+                navController = navController,
+                authViewModel = authViewModel,
+                onSignUpSuccess = {
+                    // Navigate to Home on successful login
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Signup.route) { inclusive = true }
+                    }
+
+                }
+            )
+        }
+
+        // Home Page (includes bottom navigation)
+        composable(Screen.Home.route) {
+            HomePage(
+                modifier = modifier,
+                navController = navController,
+                authViewModel = authViewModel
+            )
+        }
+
+        // Map Page
+        composable(Screen.Map.route) {
+            MapPage(
+                modifier = modifier,
+
+
+
+            )
+        }
     }
 }

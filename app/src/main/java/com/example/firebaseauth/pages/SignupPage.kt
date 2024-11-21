@@ -1,6 +1,8 @@
+
 package com.example.firebaseauth.pages
 
 import AuthViewModel
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -35,48 +37,24 @@ import androidx.compose.ui.text.style.TextAlign
 //import androidx.compose.foundation.scrollable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import android.app.DatePickerDialog
-import android.util.Log
-//import androidx.compose.foundation.DropdownMenu
-//import androidx.compose.foundation.DropdownMenuItem
-import androidx.compose.foundation.clickable
-import java.util.*
+//import com.example.firebaseauth.login.AccountType
+
 
 @Composable
+fun SignupPage(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel,
+    onSignUpSuccess: () -> Unit
+) {
+    // State for passwords (not part of UserModel)
 
-fun SignupPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
-    // State variables
-    var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var username by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-    var employeeId by remember { mutableStateOf("") }
-    var address by remember { mutableStateOf("") }
-    var contactNo by remember { mutableStateOf("") }
-    var dob by remember { mutableStateOf("") }  // Date of birth
-    var gender by remember { mutableStateOf("") }  // Gender
     var passwordVisible by remember { mutableStateOf(false) }
     var confirmPasswordVisible by remember { mutableStateOf(false) }
-    val authState = authViewModel.authState.observeAsState()
-
+    val userModel = authViewModel.UserModel.value
     val context = LocalContext.current
-
-    // DatePickerDialog state
-    val calendar = Calendar.getInstance()
-
-    val datePickerDialog = remember {
-        DatePickerDialog(
-            context,
-            { _, year, month, dayOfMonth ->
-                dob = "$dayOfMonth/${month + 1}/$year"
-            },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
-        )
-    }
-
-
 
     Column(
         modifier = modifier
@@ -87,7 +65,7 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Logo at the top
+        // Logo and heading
         Image(
             painter = painterResource(id = com.example.firebaseauth.R.drawable.logo),
             contentDescription = "App Logo",
@@ -95,8 +73,6 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
                 .size(120.dp)
                 .padding(bottom = 16.dp)
         )
-
-        // "Sign Up Form" Text with bold style, centered
         Text(
             text = "SIGN UP FORM",
             fontSize = 26.sp,
@@ -105,176 +81,107 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
             modifier = Modifier.padding(bottom = 24.dp)
         )
 
-        // Employee ID
+        // Fields bound to AuthViewModel's userModel
         OutlinedTextField(
-            value = employeeId,
-            onValueChange = { employeeId = it },
-            label = { Text(text = "Employee ID") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Employee ID Icon"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
+            value = userModel.employeeID,
+            onValueChange = { authViewModel.updateUser("employeeId", it) },
+            label = { Text("Employee ID") },
+            leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = "Employee ID Icon") },
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
-
-        // Full Name
         OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text(text = "UserName") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = "Full Name Icon"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
+            value = userModel.username,
+            onValueChange = { authViewModel.updateUser("username", it) },
+            label = { Text("Username") },
+            leadingIcon = { Icon(Icons.Default.AccountCircle, contentDescription = "Username Icon") },
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
-
-        // Address
         OutlinedTextField(
-            value = address,
-            onValueChange = { address = it },
-            label = { Text(text = "Address") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = "Address Icon"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
+            value = userModel.address,
+            onValueChange = { authViewModel.updateUser("address", it) },
+            label = { Text("Address") },
+            leadingIcon = { Icon(Icons.Default.Home, contentDescription = "Address Icon") },
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
-
-        // Contact Number
         OutlinedTextField(
-            value = contactNo,
-            onValueChange = { contactNo = it },
-            label = { Text(text = "Contact Number") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Phone,
-                    contentDescription = "Contact Number Icon"
-                )
-            },
+            value = userModel.contactNo,
+            onValueChange = { authViewModel.updateUser("contactNo", it) },
+            label = { Text("Contact Number") },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
+            leadingIcon = { Icon(Icons.Default.Phone, contentDescription = "Contact Icon") },
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
-
-        // Date of Birth Input - DatePicker
-        // Date of Birth Input - DatePicker
         OutlinedTextField(
-            value = dob,
-            onValueChange = {},
-            label = { Text(text = "Date of Birth") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.CalendarToday,
-                    contentDescription = "Date of Birth Icon"
-                )
-            },
-            readOnly = true, // Keep it read-only so the user cannot type manually
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
-                .clickable {
-                    // Open the DatePickerDialog on click
-                    Log.d("DateField", "Date field clicked, showing dialog")
-                    datePickerDialog.show()
-                }
+            value = userModel.email,
+            onValueChange = { authViewModel.updateUser("email", it) },
+            label = { Text("Email") },
+            leadingIcon = { Icon(Icons.Default.Email, contentDescription = "Email Icon") },
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
 
-
-        // Email
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text(text = "Email") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Email,
-                    contentDescription = "Email Icon"
-                )
-            },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
-        )
-
-        // Password with Show/Hide Toggle
+        // Password fields
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
-            label = { Text(text = "Password") },
+            label = { Text("Password") },
             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Password Icon"
-                )
-            },
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Password Icon") },
             trailingIcon = {
                 IconButton(onClick = { passwordVisible = !passwordVisible }) {
                     Icon(
-                        imageVector = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (passwordVisible) "Hide Password" else "Show Password"
+                        if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Toggle Password"
                     )
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 16.dp)
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
-
-        // Confirm Password with Show/Hide Toggle
         OutlinedTextField(
             value = confirmPassword,
             onValueChange = { confirmPassword = it },
-            label = { Text(text = "Confirm Password") },
+            label = { Text("Confirm Password") },
             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Confirm Password Icon"
-                )
-            },
+            leadingIcon = { Icon(Icons.Default.Lock, contentDescription = "Confirm Password Icon") },
             trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
-                        contentDescription = if (confirmPasswordVisible) "Hide Password" else "Show Password"
+                        if (confirmPasswordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                        contentDescription = "Toggle Confirm Password"
                     )
                 }
             },
-            modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .padding(bottom = 15.dp)
+            modifier = Modifier.fillMaxWidth(0.9f).padding(bottom = 16.dp)
         )
 
-        // Sign Up Button
+        // Sign-Up Button
         Button(
             onClick = {
-                if (password == confirmPassword) {
-                    // Firebase registration logic here
-
-                    // After successful registration, navigate to Home Page
-                    navController.navigate("home") // Assuming "home" is your homepage route
+                if (password == confirmPassword) { // Check if passwords match
+                    authViewModel.signup(
+                        email = userModel.email,
+                        password = password,
+                        username = userModel.username,
+                        contactNumber = userModel.contactNo,
+                        employeeID = userModel.employeeID,
+                        address = userModel.address,
+                        onSignUpSuccess = {
+                            Toast.makeText(context, "Sign-Up Successful", Toast.LENGTH_SHORT).show()
+                            navController.navigate("home") {
+                                popUpTo("signup") { inclusive = true }
+                            }
+                        },
+                        onSignUpFailure = { error ->
+                            Toast.makeText(context, "Error: $error", Toast.LENGTH_SHORT).show()
+                        }
+                    )
                 } else {
                     Toast.makeText(context, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
             },
-            enabled = authState.value != AuthState.Loading,
+            enabled = userModel.email.isNotBlank() && userModel.username.isNotBlank() &&
+                    password.isNotBlank() && confirmPassword.isNotBlank(),
             modifier = Modifier
                 .fillMaxWidth(0.9f)
                 .padding(bottom = 16.dp)
@@ -285,27 +192,14 @@ fun SignupPage(modifier: Modifier = Modifier, navController: NavController, auth
             )
         }
 
-        // Already have an account? Login Link
+        // Login link
         Row(
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(
-                text = "Already have an account? ",
-                fontSize = 20.sp
-            )
-
-            TextButton(
-                onClick = {
-                    navController.navigate("login")
-                },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.Blue)
-            ) {
-                Text(
-                    text = "Login",
-                    fontSize = 20.sp
-                )
+            Text("Already have an account? ", fontSize = 20.sp)
+            TextButton(onClick = { navController.navigate("login") }) {
+                Text("Login", fontSize = 20.sp, color = Color.Blue)
             }
         }
     }

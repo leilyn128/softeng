@@ -1,3 +1,4 @@
+
 package com.example.firebaseauth.pages
 
 import AuthViewModel
@@ -34,7 +35,7 @@ fun Account(
     navController: NavController
 ) {
     // Observe the authState
-   // val authState = authViewModel.authState.observeAsState()
+    // val authState = authViewModel.authState.observeAsState()
     val authState = authViewModel.authState.observeAsState(AuthState.Unauthenticated)
 
 
